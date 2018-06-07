@@ -6,6 +6,7 @@ use Bolt\Extension\Bolt\BoltForms\Config\EmailConfig;
 use Bolt\Extension\Bolt\BoltForms\Config\FormConfig;
 use Bolt\Extension\Bolt\BoltForms\Event\BoltFormsEmailEvent;
 use Bolt\Extension\Bolt\BoltForms\Event\BoltFormsEvents;
+use Dompdf\Dompdf;
 use Silex\Application;
 
 /**
@@ -116,6 +117,23 @@ class Email
                 ->setSubject($subject)
                 ->setBody(strip_tags($text))
                 ->addPart($body, 'text/html');
+
+        $notificationconfig = $formConfig->getNotification();
+        if ($notificationconfig['pdf'] && $notificationconfig['pdf'] === true) {
+            $dompdf = new Dompdf();
+            $dompdf_option = new \Dompdf\Options();
+            $dompdf->loadHtml($body);
+            $dompdf_option->setIsFontSubsettingEnabled(true);
+            $dompdf_option->setIsRemoteEnabled(true);
+            $dompdf_option->setIsHtml5ParserEnabled(true);
+            $dompdf->setOptions($dompdf_option);        
+            $dompdf->setPaper('A3', 'landscape');
+            $dompdf->render();
+            $output = $dompdf->output();
+            file_put_contents($notificationconfig['pdf_path'], $output);
+            $this->message->attach(\Swift_Attachment::fromPath($notificationconfig['pdf_path']));            
+        }        
+        
     }
 
     /**
