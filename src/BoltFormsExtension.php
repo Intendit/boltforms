@@ -73,6 +73,7 @@ class BoltFormsExtension extends SimpleExtension
 
         return [
             'boltforms'         => [[$app['boltforms.twig'], 'twigBoltForms'], ['is_safe' => ['html'], 'is_safe_callback' => true]],
+            'boltformswithoutrecaptcha' => [[$app['boltforms.twig'], 'twigBoltFormswithoutRecaptcha'], ['is_safe' => ['html'], 'is_safe_callback' => true]],
             'boltforms_uploads' => [[$app['boltforms.twig'], 'twigBoltFormsUploads'], []],
         ];
     }

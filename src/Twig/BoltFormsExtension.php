@@ -132,6 +132,80 @@ class BoltFormsExtension
         return $boltForms->renderForm($formName, $template, $context);
     }
 
+    public function twigBoltFormswithoutRecaptcha($formName, $htmlPreSubmit = '', $htmlPostSubmit = '', $data = [], $options = [], $defaults = [])
+    {
+        if (!isset($this->config[$formName])) {
+            return new \Twig_Markup("<p><strong>BoltForms is missing the configuration for the form named '$formName'!</strong></p>", 'UTF-8');
+        }
+
+        /** @var BoltForms $boltForms */
+        $boltForms = $this->app['boltforms'];
+        $sent = false;
+        $message = '';
+        $error = '';
+        $reCaptchaResponse = [
+            'success'    => true,
+            'errorCodes' => null,
+        ];
+
+        $boltForms->makeForm($formName, FormType::class, $data, $options);
+
+        $fields = $this->config[$formName]['fields'];
+
+        // Add our fields all at once
+        $boltForms->addFieldArray($formName, $fields);
+
+        // Handle the POST
+        $request = $this->app['request_stack']->getCurrentRequest();
+        if ($request && $request->isMethod('POST') && $request->get($formName) !== null) {
+            // Check reCaptcha, if enabled.
+            #$reCaptchaResponse = $this->app['boltforms.processor']->reCaptchaResponse($this->app['request']);
+
+            try {
+                $sent = $this->app['boltforms.processor']->process($formName, $this->config[$formName], $reCaptchaResponse);
+                $message = isset($this->config[$formName]['feedback']['success']) ? $this->config[$formName]['feedback']['success'] : 'Form submitted sucessfully';
+            } catch (FileUploadException $e) {
+                $error = $e->getMessage();
+                $this->app['logger.system']->debug('[BoltForms] File upload exception: ' . $error, ['event' => 'extensions']);
+            } catch (FormValidationException $e) {
+                $error = $e->getMessage();
+                $this->app['logger.system']->debug('[BoltForms] Form validation exception: ' . $error, ['event' => 'extensions']);
+            }
+        }
+
+        /** @var Form[] $fields Values to be passed to Twig */
+        $fields = $boltForms->getForm($formName)->all();
+        $context = [
+            'fields'    => $fields,
+            'defaults'  => $defaults,
+            'html_pre'  => $htmlPreSubmit,
+            'html_post' => $htmlPostSubmit,
+            'error'     => $error,
+            'message'   => $message,
+            'sent'      => $sent,
+            'recaptcha' => [
+                'enabled'       => false,
+                'label'         => $this->config['recaptcha']['label'],
+                'public_key'    => $this->config['recaptcha']['public_key'],
+                'theme'         => $this->config['recaptcha']['theme'],
+                'error_message' => $this->config['recaptcha']['error_message'],
+                'error_codes'   => $reCaptchaResponse ? $reCaptchaResponse['errorCodes'] : null,
+                'valid'         => $reCaptchaResponse ? $reCaptchaResponse['success'] : null,
+            ],
+            'formname'  => $formName,
+            'webpath'   => $this->app['extensions']->get('Bolt/BoltForms')->getWebDirectory()->getPath(),
+            'debug'     => $this->config['debug']['enabled'] || (isset($this->config[$formName]['notification']['debug']) && $this->config[$formName]['notification']['debug']),
+        ];
+
+        // If the form has it's own templates defined, use those, else the globals.
+        $template = isset($this->config[$formName]['templates']['form'])
+            ? $this->config[$formName]['templates']['form']
+            : $this->config['templates']['form'];
+
+        // Render the Twig_Markup
+        return $boltForms->renderForm($formName, $template, $context);
+    }
+
     /**
      * Twig function to display uploaded files, downloadable via the controller.
      *
