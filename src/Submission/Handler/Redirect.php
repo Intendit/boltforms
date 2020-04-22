@@ -73,7 +73,7 @@ class Redirect
     {
         $response = new RedirectResponse($request->getRequestUri());
 
-        return $response->send();
+        $response->send();
     }
 
     /**
