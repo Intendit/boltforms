@@ -63,6 +63,7 @@ class BoltFormsExtension extends SimpleExtension
     public function getConfigKeys()
     {
         return [
+            'honeypot',
             'csrf',
             'recaptcha',
             'templates',
@@ -163,6 +164,7 @@ class BoltFormsExtension extends SimpleExtension
             'fieldmap' => [
                 'email' => new FieldMap\Email(),
             ],
+            'honeypot' => true,
         ];
     }
 }
