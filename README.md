@@ -10,3 +10,6 @@ Documentation
 For full documentation see the [Online docs][docs].
 
 [docs]: https://bolt.github.io/boltforms/
+
+Intendit functions added:
+honeypot

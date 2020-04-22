@@ -63,9 +63,12 @@ class FormConfig
     {
         $this->name = $formName;
         $this->rootConfig = $rootConfig;
-
         $defaults = $this->getDefaults();
         $formConfig = $this->mergeRecursiveDistinct($defaults, $formConfig);
+        
+        if ($rootConfig->isHoneypot() === true) {
+            $formConfig['fields']+= $this->setHoneypotFields();
+        }
 
         $this->feedback     = new Form\FeedbackOptionsBag($formConfig['feedback']);
         $this->fields       = new Form\FieldsBag($formConfig['fields']);
@@ -184,6 +187,50 @@ class FormConfig
     public function getOptions()
     {
         return $this->options;
+    }
+
+    /**
+     * Get form recaptcha status.
+     *
+     * @return array
+     */
+    public function setHoneypotFields()
+    {
+        return [
+            'intenditBoltformsSpecial1' => [
+                'type' => 'text',
+                'options' => [
+                    'required' => false,
+                    'label' => 'Special field',
+                    'attr' => [
+                        'class' => 'intenditBoltformsSpecialClass',
+                        'placeholder' => 'Your name here'
+                    ],
+                ],
+            ],
+            'intenditBoltformsSpecial2' => [
+                'type' => 'email',
+                'options' => [
+                    'required' => false,
+                    'label' => 'Special field2',
+                    'attr' => [
+                        'class' => 'intenditBoltformsSpecialClass',
+                        'placeholder' => 'Your email here'
+                    ],
+                ],
+            ],
+            'intenditBoltformsSpecial3' => [
+                'type' => 'text',
+                'options' => [
+                    'required' => false,
+                    'label' => 'Special field3',
+                    'attr' => [
+                        'class' => 'intenditBoltformsSpecialClass',
+                        'placeholder' => 'Your address here'
+                    ],
+                ],
+            ]                        
+        ];
     }
 
     /**

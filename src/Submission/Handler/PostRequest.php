@@ -43,7 +43,7 @@ class PostRequest
      */
     public function __construct(RequestStack $requestStack)
     {
-        $this->requestStack = $requestStack;
+        $this->requestStack = $requestStack;        
     }
 
     /**
@@ -73,11 +73,16 @@ class PostRequest
         }
 
         // Submitted data
-        $data = $form->getData();
+        $data = $form->getData();        
+
+        // Check if honeypot is filled.
+        if (!empty($data["intenditBoltformsSpecial1"]) || !empty($data["intenditBoltformsSpecial2"]) || !empty($data["intenditBoltformsSpecial3"])) {
+            return null;
+        }        
 
         $event = new ProcessorEvent($formName, $data);
         $dispatcher->dispatch(BoltFormsEvents::SUBMISSION_PRE_PROCESSOR, $event);
-
+        file_put_contents('/var/bmss/source/3.6dev/extensions/vendor/bolt/boltforms/test.txt', var_export($data["foo"], true));
         return $event->getData();
     }
 }
