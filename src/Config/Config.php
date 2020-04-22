@@ -44,10 +44,9 @@ class Config extends ParameterBag
     public function __construct(array $parameters = [])
     {
         parent::__construct();
-        $nonForms = ['csrf', 'debug', 'fieldmap', 'recaptcha', 'templates', 'uploads'];
+        $nonForms = ['honeypot', 'csrf', 'debug', 'fieldmap', 'recaptcha', 'templates', 'uploads'];
         $this->baseForms = new ParameterBag();
-        $this->resolvedForms = new ParameterBag();
-
+        $this->resolvedForms = new ParameterBag();        
         foreach ($parameters as $key => $value) {
             if ($value instanceof FieldMap\Email) {
                 $this->set($key, $value);
@@ -82,6 +81,14 @@ class Config extends ParameterBag
         $this->resolvedForms->set($formName, $resolvedFormConfig);
 
         return $this;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isHoneypot()
+    {
+        return $this->get('honeypot');
     }
 
     /**
