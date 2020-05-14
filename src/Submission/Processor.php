@@ -72,8 +72,13 @@ class Processor
         /** @var FormData $formData */
         $formData = $this->getRequestData($formName);
         $formConfig = new FormConfig($formName, $formDefinition);
-        $sent = $this->app['boltforms']->getForm($formName)->isSubmitted();
-
+        $sent = $this->app['boltforms']->getForm($formName)->isSubmitted();        
+        if ($this->config['honeypot'] === true) {
+            $checkHoneypot = $this->app['boltforms']->getForm($formName)->getData();
+            if (!empty($checkHoneypot["intenditBoltformsSpecial1"]) || !empty($checkHoneypot["intenditBoltformsSpecial2"]) || !empty($checkHoneypot["intenditBoltformsSpecial3"])) {
+                throw new FormValidationException($formConfig->getFeedback()->getError() ?: 'There are errors in the form, please fix before trying to resubmit');
+            }
+        }
         if ($sent && $formData !== null && $recaptchaResponse['success']) {
             $this->processFields($formConfig, $formData);
             $this->processDatabase($formConfig, $formData);
@@ -141,7 +146,11 @@ class Processor
 
             // Submitted data
             $data = $this->app['boltforms']->getForm($formName)->getData();
-
+            if ($this->config['honeypot'] === true) {
+                unset($data['intenditBoltformsSpecial1']);
+                unset($data['intenditBoltformsSpecial2']);
+                unset($data['intenditBoltformsSpecial3']);
+            }
             $event = new BoltFormsProcessorEvent($formName, $data);
             $this->app['dispatcher']->dispatch(BoltFormsEvents::SUBMISSION_PRE_PROCESSOR, $event);
 

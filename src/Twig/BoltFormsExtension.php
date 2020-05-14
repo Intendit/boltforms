@@ -73,11 +73,12 @@ class BoltFormsExtension
             'success'    => true,
             'errorCodes' => null,
         ];
-
         $boltForms->makeForm($formName, FormType::class, $data, $options);
 
         $fields = $this->config[$formName]['fields'];
-
+        if ($this->config['honeypot'] === true) {
+            $fields += $this->setHoneypotFields();
+        }
         // Add our fields all at once
         $boltForms->addFieldArray($formName, $fields);
 
@@ -241,4 +242,46 @@ class BoltFormsExtension
 
         return new \Twig_Markup($html, 'UTF-8');
     }
+
+    /**
+     * Honeypot fields
+     */
+    public function setHoneypotFields()
+    {
+        return [
+            'intenditBoltformsSpecial1' => [
+                'type' => 'text',
+                'options' => [
+                    'required' => false,
+                    'label' => 'Special field',
+                    'attr' => [
+                        'class' => 'intenditBoltformsSpecialClass',
+                        'placeholder' => 'Your name here'
+                    ],
+                ],
+            ],
+            'intenditBoltformsSpecial2' => [
+                'type' => 'email',
+                'options' => [
+                    'required' => false,
+                    'label' => 'Special field2',
+                    'attr' => [
+                        'class' => 'intenditBoltformsSpecialClass',
+                        'placeholder' => 'Your email here'
+                    ],
+                ],
+            ],
+            'intenditBoltformsSpecial3' => [
+                'type' => 'text',
+                'options' => [
+                    'required' => false,
+                    'label' => 'Special field3',
+                    'attr' => [
+                        'class' => 'intenditBoltformsSpecialClass',
+                        'placeholder' => 'Your address here'
+                    ],
+                ],
+            ]                        
+        ];
+    }    
 }

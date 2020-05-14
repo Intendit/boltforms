@@ -103,6 +103,7 @@ class BoltFormsExtension extends SimpleExtension
     {
         return [
             'csrf',
+            'honeypot',
             'recaptcha',
             'templates',
             'debug',
@@ -120,6 +121,7 @@ class BoltFormsExtension extends SimpleExtension
     {
         return [
             'csrf'      => true,
+            'honeypot'  => true,
             'recaptcha' => [
                 'enabled'       => false,
                 'label'         => "Please enter the reCaptch text to prove you're a human",
